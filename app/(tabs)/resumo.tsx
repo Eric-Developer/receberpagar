@@ -1,7 +1,8 @@
-import { View, Text, StyleSheet } from "react-native";
-import { useEffect, useState } from "react";
 import { db } from "@/database/database";
 import { Picker } from "@react-native-picker/picker";
+import { useFocusEffect } from "expo-router";
+import React, { useCallback, useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
 
 export default function Resumo() {
   const hoje = new Date();
@@ -12,35 +13,44 @@ export default function Resumo() {
   const [totalEsperado, setTotalEsperado] = useState(0);
   const [totalRecebido, setTotalRecebido] = useState(0);
 
-  useEffect(() => {
+  function carregarResumo() {
+    // TOTAL ESPERADO (somente alunos que EXISTEM)
     const total = db.getFirstSync<{ total: number }>(
       `
       SELECT SUM(valor) AS total
       FROM alunos
       WHERE status = 'ATIVO'
-        AND (
-          ano < ?
-          OR (ano = ? AND mes <= ?)
-        )
-      `,
-      [ano, ano, mes]
+      `
     );
 
-    // TOTAL RECEBIDO NO MÊS
+    // TOTAL RECEBIDO (somente pagamentos ligados a alunos existentes)
     const recebido = db.getFirstSync<{ recebido: number }>(
       `
-      SELECT SUM(valor) AS recebido
-      FROM pagamentos
-      WHERE mes = ?
-        AND ano = ?
-        AND status = 'PAGO'
+      SELECT SUM(p.valor) AS recebido
+      FROM pagamentos p
+      INNER JOIN alunos a ON a.id = p.aluno_id
+      WHERE p.mes = ?
+        AND p.ano = ?
+        AND p.status = 'PAGO'
       `,
       [mes, ano]
     );
 
     setTotalEsperado(total?.total || 0);
     setTotalRecebido(recebido?.recebido || 0);
+  }
+
+  // Atualiza quando muda mês/ano
+  React.useEffect(() => {
+    carregarResumo();
   }, [mes, ano]);
+
+  // Atualiza quando volta para tela
+  useFocusEffect(
+    useCallback(() => {
+      carregarResumo();
+    }, [mes, ano])
+  );
 
   const faltaReceber = totalEsperado - totalRecebido;
 
@@ -50,34 +60,41 @@ export default function Resumo() {
 
       {/* FILTROS */}
       <View style={styles.filtros}>
-        <Picker
-          selectedValue={mes}
-          style={styles.picker}
-          onValueChange={(v) => setMes(v)}
-        >
-          {Array.from({ length: 12 }).map((_, i) => (
-            <Picker.Item
-              key={i + 1}
-              label={`Mês ${String(i + 1).padStart(2, "0")}`}
-              value={i + 1}
-            />
-          ))}
-        </Picker>
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue={mes}
+            onValueChange={(v) => setMes(v)}
+            style={styles.picker}
+          >
+            {Array.from({ length: 12 }).map((_, i) => (
+              <Picker.Item
+                key={i + 1}
+                label={`Mês ${String(i + 1).padStart(2, "0")}`}
+                value={i + 1}
+              />
+            ))}
+          </Picker>
+        </View>
 
-        <Picker
-          selectedValue={ano}
-          style={styles.picker}
-          onValueChange={(v) => setAno(v)}
-        >
-          {[2024, 2025, 2026, 2027].map((a) => (
-            <Picker.Item key={a} label={String(a)} value={a} />
-          ))}
-        </Picker>
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue={ano}
+            onValueChange={(v) => setAno(v)}
+            style={styles.picker}
+          >
+            {[2024, 2025, 2026, 2027].map((a) => (
+              <Picker.Item key={a} label={String(a)} value={a} />
+            ))}
+          </Picker>
+        </View>
       </View>
 
+      {/* CARDS */}
       <View style={styles.card}>
         <Text style={styles.label}>💰 Total esperado</Text>
-        <Text style={styles.valor}>R$ {totalEsperado.toFixed(2)}</Text>
+        <Text style={styles.valor}>
+          R$ {totalEsperado.toFixed(2)}
+        </Text>
       </View>
 
       <View style={styles.card}>
@@ -105,40 +122,48 @@ export default function Resumo() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: "#f4f6f8",
+    padding: 24,
+    backgroundColor: "#f1f5f9",
   },
   titulo: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: "bold",
-    marginBottom: 12,
+    marginBottom: 20,
+    color: "#0f172a",
   },
   filtros: {
     flexDirection: "row",
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    marginBottom: 20,
+    gap: 10,
+    marginBottom: 25,
+  },
+  pickerContainer: {
+    flex: 1,
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    borderRadius: 14,
     overflow: "hidden",
-    elevation: 2,
   },
   picker: {
-    flex: 1,
-    height: 60,
+    height: 55,
+    color: "#0f172a",
+    backgroundColor: "#ffffff",
   },
   card: {
-    backgroundColor: "#fff",
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    elevation: 3,
+    backgroundColor: "#ffffff",
+    padding: 18,
+    borderRadius: 18,
+    marginBottom: 15,
+    elevation: 4,
   },
   label: {
     fontSize: 14,
-    color: "#666",
+    color: "#64748b",
   },
   valor: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "bold",
-    marginTop: 4,
+    marginTop: 6,
+    color: "#0f172a",
   },
 });

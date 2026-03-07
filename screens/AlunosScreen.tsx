@@ -2,6 +2,7 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react
 import { useState, useCallback } from 'react';
 import { db } from '@/database/database';
 import { router, useFocusEffect } from 'expo-router';
+import React from 'react';
 
 type Aluno = {
   id: number;

@@ -1,7 +1,8 @@
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { useState, useEffect } from 'react';
 import { db } from '@/database/database';
 import { router, useLocalSearchParams } from 'expo-router';
+import React from 'react';
+import { useEffect, useState } from 'react';
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 type Aluno = {
   id: number;
@@ -11,7 +12,7 @@ type Aluno = {
 };
 
 export default function EditAluno() {
-  const { id } = useLocalSearchParams<{ id: string }>(); // pega o ID do aluno da rota
+  const { id } = useLocalSearchParams<{ id: string }>();
   const [nome, setNome] = useState('');
   const [valor, setValor] = useState('');
   const [status, setStatus] = useState<'ATIVO' | 'INATIVO'>('ATIVO');
@@ -19,7 +20,7 @@ export default function EditAluno() {
   useEffect(() => {
     if (!id) return;
 
-    // Buscar aluno pelo ID
+   
     const aluno = db.getAllSync<Aluno>('SELECT * FROM alunos WHERE id = ?', [id])[0];
     if (aluno) {
       setNome(aluno.nome);
@@ -40,7 +41,7 @@ export default function EditAluno() {
     );
 
     Alert.alert('Sucesso', 'Aluno atualizado!');
-    router.back(); // volta para lista
+    router.back();
   }
 
   return (
