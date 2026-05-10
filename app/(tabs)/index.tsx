@@ -1,11 +1,10 @@
-import { Link } from 'expo-router';
-import { TouchableOpacity, Text } from 'react-native';
-import AlunosScreen from '@/screens/AlunosScreen';
+import ContasScreen from '@/screens/ContasScreen';
+import React from 'react';
 
-export default function AlunosTab() {
+export default function ContasTab() {
   return (
     <>
-      <AlunosScreen />
+      <ContasScreen />
     </>
   );
 }

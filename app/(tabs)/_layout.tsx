@@ -1,16 +1,51 @@
-import { Tabs } from 'expo-router';
+import { HapticTab } from '@/components/haptic-tab';
+import { Theme } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import { Tabs } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TabsLayout() {
+  const insets = useSafeAreaInsets();
+  const baseHeight = 64;
+  const bottomPad = Math.max(10, insets.bottom);
+
   return (
-    <Tabs>
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: Theme.colors.primaryDark,
+        tabBarInactiveTintColor: Theme.colors.gray500,
+        tabBarLabelStyle: {
+          fontFamily: Theme.typography.fontFamily,
+          fontWeight: '600' as any,
+          fontSize: Theme.typography.fontSize.xs,
+          marginBottom: 2,
+        },
+        tabBarStyle: {
+          height: baseHeight + bottomPad,
+          paddingTop: Theme.spacing.sm,
+          paddingBottom: bottomPad,
+          borderTopWidth: 1,
+          borderTopColor: Theme.colors.border,
+          backgroundColor: Theme.colors.surface,
+          ...Theme.shadows.sm,
+        },
+        tabBarButton: (props) => <HapticTab {...props} />,
+        tabBarItemStyle: {
+          paddingVertical: Theme.spacing.xs,
+        },
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Alunos',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people" size={size} color={color} />
+          title: 'Início',
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? "receipt" : "receipt-outline"}
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
@@ -18,9 +53,27 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="pagamentos"
         options={{
-          title: 'Pagamentos',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="cash" size={size} color={color} />
+          title: 'Movimentações',
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? "cash" : "cash-outline"}
+              size={size}
+              color={color}
+            />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="nova-conta"
+        options={{
+          title: 'Adicionar',
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? "add-circle" : "add-circle-outline"}
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
@@ -29,30 +82,29 @@ export default function TabsLayout() {
         name="resumo"
         options={{
           title: 'Resumo',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="stats-chart" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? "bar-chart" : "bar-chart-outline"}
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
-        <Tabs.Screen
-        name="add"
+
+      <Tabs.Screen
+        name="historico"
         options={{
-          title: 'Adicionar',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="add-circle" size={size} color={color} />
-          ),
-        }}
-      />
-       <Tabs.Screen
-        name="lista"
-        options={{
-          title: 'Lista',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="list" size={size} color={color} />
+          title: 'Histórico',
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? "list" : "list-outline"}
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
     </Tabs>
-    
   );
 }
